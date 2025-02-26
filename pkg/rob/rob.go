@@ -293,6 +293,12 @@ func (r *Robber) start(concurrentLimit, maxRetries int) {
 		result := r.Success.Load()
 		if !result {
 			r.formatLog("没课可选了，正在重试...")
+			if r.config.MinCredit-1 < 1 {
+				r.config.MinCredit = 1
+			} else {
+				r.config.MinCredit = r.config.MinCredit - 1
+			}
+			r.formatLog(fmt.Sprintf("降低学分要求为[%d]，正在重试...", r.config.MinCredit))
 		} else {
 			fmt.Println("退出")
 			r.StopRob()
@@ -331,6 +337,20 @@ func (r *Robber) doSelect(classInfoList []map[string]interface{}, item map[strin
 		} else {
 			teacherName = tNArr[1]
 		}
+
+		if !r.isCourseValid(item) {
+			kch := getString(item["kch"])
+			r.formatLog(fmt.Sprintf("%s-%s-不符合课程号要求[课程号：%s,%s]-线程[%d]", kcmc, teacherName, kch, strings.Join(r.config.CourseNumList, "|"), thread))
+			continue
+		}
+
+		// 通过课程号校验 但学分不符
+		if r.isCourseValid(item) && !r.isMinCreditValid(item) {
+			xf := getString(item["xf"])
+			r.formatLog(fmt.Sprintf("%s-%s-不符合学分要求[学分：%s/%d]-线程[%d]", kcmc, teacherName, xf, r.config.MinCredit, thread))
+			continue
+		}
+
 		if toInt(jxbrl) <= toInt(yxzrs) {
 			r.formatLog(fmt.Sprintf("%s-%s人满了[%s/%s]-线程[%d]", kcmc, teacherName, yxzrs, jxbrl, thread))
 			continue
@@ -401,4 +421,23 @@ func (r *Robber) stopEvent() {
 func (r *Robber) login() error {
 	err := r.jwxt.login()
 	return err
+}
+
+func (r *Robber) isCourseValid(item map[string]interface{}) bool {
+	if r.config.CourseType != 0 {
+		return true
+	}
+	kch := getString(item["kch"])
+	if len(r.config.CourseNumList) > 0 && indexOf(kch, r.config.CourseNumList) != -1 {
+		return true
+	}
+	return false
+}
+
+func (r *Robber) isMinCreditValid(item map[string]interface{}) bool {
+	xf := toFloat(getString(item["xf"]))
+	if xf >= float64(r.config.MinCredit) {
+		return true
+	}
+	return false
 }

@@ -23,17 +23,18 @@ var (
 	ui       *model.UIComponents
 	robber   *rob.Robber
 	myWindow fyne.Window
+	logComp  *logger.Logger
 )
 
 func main() {
 	myApp := app.New()
 
-	myWindow = myApp.NewWindow("GCC抢课工具V1 - 仅供学习参考，禁止用于非法用途，否则后果自负 - BY: 广东最深情的男人")
+	myWindow = myApp.NewWindow("GCC抢课工具V1.0.1 - 仅供学习参考，禁止用于非法用途，否则后果自负 - BY: 广东最深情的男人")
 	myWindow.SetFixedSize(false)            // 确保窗口大小可调整
 	myWindow.Resize(fyne.NewSize(800, 900)) // 设置初始窗口大小
 
 	ui = createUIComponents()
-	logComp := logger.NewLogger(ui)
+	logComp = logger.NewLogger(ui)
 	robber = rob.NewRobber(myWindow, ui, logComp)
 
 	basicInfoPanel := container.NewVBox(
@@ -57,14 +58,14 @@ func main() {
 			widget.NewLabel("提前："),
 			ui.AHeadMinuteEntry,
 			widget.NewLabel("分开枪"),
-			widget.NewLabel("----系统将会在距离系统选课开始时间提前查询课程列表，防止教务系统不按套路出牌"),
 		),
+		widget.NewLabel("----系统将会在距离系统选课开始时间提前查询课程列表\n防止教务系统不按套路出牌\n比如有时候教务系统会在12:29开始选课（正式时间是12:30）"),
 		container.NewHBox(
 			widget.NewLabel("线程数："),
 			ui.ThreadNumEntry,
 			widget.NewLabel("个"),
-			widget.NewLabel("---线程数越多消耗的电脑资源越多，但是抢到的概率就越大"),
 		),
+		widget.NewLabel("----线程数越多消耗的电脑资源越多\n但是抢到的概率就越大\n比如10线程，表示10个人同时帮你抢一个课"),
 	)
 
 	configPanel := container.NewVBox()
@@ -82,12 +83,13 @@ func main() {
 		widget.NewLabel("课程类型"),
 		ui.RadioButtonGroup,
 		image,
-		widget.NewLabel("优质大流量卡请扫码联系获取"),
+		widget.NewLabel("优质大流量卡请扫码联系获取（免费）"),
 	)
 
 	inputPanel := container.NewVBox(
-		widget.NewLabel("最低学分限制:"),
+		widget.NewLabel("学分限制:"),
 		ui.MinCreditEntry,
+		widget.NewLabel("----如果没有符合指定学分的课程可选\n会依次降低学分要求直至1"),
 		widget.NewLabel("指定课程名称:"),
 		ui.CourseNameEntry,
 		widget.NewLabel("指定老师:"),
@@ -96,7 +98,7 @@ func main() {
 		ui.CourseNumListEntry,
 	)
 
-	buttonPanel := container.NewHBox(ui.StartButton, ui.StopButton)
+	buttonPanel := container.NewHBox(ui.StartButton, ui.StopButton, ui.CopyButton)
 
 	logCard := widget.NewCard("", "", ui.LogScroll)
 	logBox := container.NewBorder(nil, nil, nil, nil, container.NewPadded(logCard))
@@ -182,6 +184,15 @@ func createUIComponents() *model.UIComponents {
 	ui.StopButton = widget.NewButton("停止", func() {
 		robber.StopRob()
 		component.StopButton(ui)
+	})
+
+	ui.CopyButton = widget.NewButton("拷贝日志", func() {
+		res := logComp.Copy()
+		if res {
+			dialog.ShowInformation("拷贝结果", "拷贝成功", myWindow)
+		} else {
+			dialog.ShowInformation("拷贝结果", "拷贝失败", myWindow)
+		}
 	})
 
 	// 初始化 logScroll

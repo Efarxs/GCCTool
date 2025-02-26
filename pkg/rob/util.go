@@ -97,6 +97,14 @@ func toInt(s string) int {
 	return i
 }
 
+func toFloat(s string) float64 {
+	f, err := strconv.ParseFloat(s, 64)
+	if err != nil {
+		return 0
+	}
+	return f
+}
+
 func getString(s interface{}) string {
 	if s == nil {
 		return ""

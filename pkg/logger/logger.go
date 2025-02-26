@@ -3,6 +3,7 @@ package logger
 import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
+	"github.com/atotto/clipboard"
 	"jwxt/model"
 	"strings"
 	"sync"
@@ -58,4 +59,16 @@ func (l *Logger) processLogs() {
 			l.mu.Unlock()
 		}
 	}
+}
+
+// 复制日志内容到剪切板
+func (l *Logger) Copy() bool {
+	l.mu.Lock()
+	msg := l.LogLabel.Text
+	err := clipboard.WriteAll(msg)
+	l.mu.Unlock()
+	if err != nil {
+		return false
+	}
+	return true
 }

@@ -24,4 +24,5 @@ type UIComponents struct {
 	ThreadNumEntry     *widget.Entry
 	AHeadMinuteEntry   *widget.Entry
 	AgentEntry         *widget.Entry
+	CopyButton         *widget.Button
 }
