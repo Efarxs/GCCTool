@@ -29,7 +29,7 @@ var (
 func main() {
 	myApp := app.New()
 
-	myWindow = myApp.NewWindow("GCC抢课工具V1.0.1 - 仅供学习参考，禁止用于非法用途，否则后果自负 - BY: 广东最深情的男人")
+	myWindow = myApp.NewWindow("GCC抢课工具V1.0.2 - 仅供学习参考，禁止用于非法用途，否则后果自负 - BY: 广东最深情的男人")
 	myWindow.SetFixedSize(false)            // 确保窗口大小可调整
 	myWindow.Resize(fyne.NewSize(800, 900)) // 设置初始窗口大小
 
@@ -157,7 +157,7 @@ func createUIComponents() *model.UIComponents {
 	}
 
 	// 初始化 checkBoxes
-	checkBoxLabels := []string{"科技类", "人文类", "经营类", "体育类", "创新创业类", "艺术类", "自然科学类", "其他类"}
+	checkBoxLabels := []string{"科技类", "人文类", "经营类", "体育类", "创新创业类", "艺术类", "自然科学类", "思政累", "其他类"}
 	for i, label := range checkBoxLabels {
 		ui.CheckBoxes[i] = widget.NewCheck(label, func(b bool) {})
 	}
@@ -200,8 +200,8 @@ func createUIComponents() *model.UIComponents {
 	ui.LogScroll.SetMinSize(fyne.NewSize(0, 100)) // 设置日志框的最小大小
 
 	// 设置默认值
-	//ui.AccountEntry.SetText("202301010402")
-	//ui.PasswordEntry.SetText("Czyhs2005.1.25")
+	//ui.AccountEntry.SetText("")
+	//ui.PasswordEntry.SetText("")
 	//ui.AgentEntry.SetText("http://1030637rq17qg.vicp.fun")
 	ui.HourEntry.SetText("12")
 	ui.MinuteEntry.SetText("30")

@@ -12,6 +12,7 @@ type Config struct {
 	CourseName    string
 	TeacherName   string
 	CourseNumList []string
+	CategoryList  []string
 
 	ThreadNum   int
 	AHeadMinute int

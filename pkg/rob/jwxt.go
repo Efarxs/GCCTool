@@ -229,34 +229,47 @@ func (j *JwxtRob) initPostArr2() error {
 	return nil
 }
 
+func (j *JwxtRob) getInputValue(key string) string {
+	v1, ok1 := j.postArr1[key]
+	v2, ok2 := j.postArr2[key]
+	if ok1 {
+		return v1
+	}
+	if ok2 {
+		return v2
+	}
+	return ""
+}
+
 // postDataCommon 将 postArr1 和 postArr2 中的数据合并到 postDataMap 中
 func (j *JwxtRob) postDataCommon(postDataMap map[string]string) {
 	// 从 postArr2 中提取数据
-	postDataMap["sfkknj"] = j.postArr2["sfkknj"]
-	postDataMap["sfkkzy"] = j.postArr2["sfkkzy"]
-	postDataMap["kzybkxy"] = j.postArr2["kzybkxy"]
-	postDataMap["sfznkx"] = j.postArr2["sfznkx"]
-	postDataMap["zdkxms"] = j.postArr2["zdkxms"]
-	postDataMap["sfkxq"] = j.postArr2["sfkxq"]
-	postDataMap["sfkcfx"] = j.postArr2["sfkcfx"]
-	postDataMap["kkbk"] = j.postArr2["kkbk"]
-	postDataMap["kkbkdj"] = j.postArr2["kkbkdj"]
+	postDataMap["sfkknj"] = j.getInputValue("sfkknj")
+	postDataMap["sfkkzy"] = j.getInputValue("sfkkzy")
+	postDataMap["kzybkxy"] = j.getInputValue("kzybkxy")
+	postDataMap["sfznkx"] = j.getInputValue("sfznkx")
+	postDataMap["zdkxms"] = j.getInputValue("zdkxms")
+	postDataMap["sfkxq"] = j.getInputValue("sfkxq")
+	postDataMap["sfkcfx"] = j.getInputValue("sfkcfx")
+	postDataMap["kkbk"] = j.getInputValue("kkbk")
+	postDataMap["kkbkdj"] = j.getInputValue("kkbkdj")
 
 	// 从 postArr1 中提取数据
-	postDataMap["zyfx_id"] = j.postArr1["zyfx_id"]
-	postDataMap["njdm_id"] = j.postArr1["njdm_id"]
-	postDataMap["bh_id"] = j.postArr1["bh_id"]
-	postDataMap["xbm"] = j.postArr1["xbm"]
-	postDataMap["xslbdm"] = j.postArr1["xslbdm"]
-	postDataMap["mzm"] = j.postArr1["mzm"]
-	postDataMap["xz"] = j.postArr1["xz"]
+	postDataMap["zyfx_id"] = j.getInputValue("zyfx_id")
+	postDataMap["njdm_id"] = j.getInputValue("njdm_id")
+	postDataMap["bh_id"] = j.getInputValue("bh_id")
+	postDataMap["xbm"] = j.getInputValue("xbm")
+	postDataMap["xslbdm"] = j.getInputValue("xslbdm")
+	postDataMap["mzm"] = j.getInputValue("mzm")
+	postDataMap["xz"] = j.getInputValue("xz")
 
 	// 从 postArr2 中提取数据
-	postDataMap["rwlx"] = j.postArr2["rwlx"]
-	postDataMap["xkly"] = j.postArr2["xkly"]
-	postDataMap["bklx_id"] = j.postArr2["bklx_id"]
-	postDataMap["sfkkjyxdxnxq"] = j.postArr2["sfkkjyxdxnxq"]
-	postDataMap["xqh_id"] = j.postArr1["xqh_id"]
+	postDataMap["rwlx"] = j.getInputValue("rwlx")
+	postDataMap["xkly"] = j.getInputValue("xkly")
+	postDataMap["bklx_id"] = j.getInputValue("bklx_id")
+	postDataMap["sfkkjyxdxnxq"] = j.getInputValue("sfkkjyxdxnxq")
+	postDataMap["xqh_id"] = j.getInputValue("xqh_id")
+
 }
 
 func (j *JwxtRob) GetClassList() ([]map[string]interface{}, error) {
@@ -282,36 +295,57 @@ func (j *JwxtRob) GetClassList() ([]map[string]interface{}, error) {
 		postDataMap["filter_list[0]"] = j.robConfig.CourseName
 	}
 
+	// kcgs_list%5B0%5D=1&kcgs_list%5B1%5D=2&kcgs_list%5B2%5D=3&kcgs_list%5B3%5D=4&kcgs_list%5B4%5D=5&rwlx=2&xklc=2&xkly=0&bklx_id=0&sfkkjyxdxnxq=0&kzkcgs=0&xqh_id=1&jg_id=12&njdm_id_1=2021&zyh_id_1=1201&gnjkxdnj=0&zyh_id=1201&zyfx_id=wfx&njdm_id=2021&bh_id=12012102&bjgkczxbbjwcx=0&xbm=1&xslbdm=421&mzm=01&xz=4&ccdm=3&xsbj=0&sfkknj=0&sfkkzy=0&kzybkxy=0&sfznkx=0&zdkxms=0&sfkxq=0&sfkcfx=0&kkbk=0&kkbkdj=0&sfkgbcx=0&sfrxtgkcxd=0&tykczgxdcs=0&xkxnm=2024&xkxqm=12&kklxdm=10&bbhzxjxb=0&xkkz_id=2F05D8896BE84A65E065000000000001&rlkz=0&xkzgbj=0&kspage=1&jspage=10&jxbzb=
 	// 添加其他参数
-	postDataMap["gnjkxdnj"] = j.postArr1["gnjkxdnj"]
-	postDataMap["bjgkczxbbjwcx"] = j.postArr1["bjgkczxbbjwcx"]
-	postDataMap["xqh_id"] = j.postArr1["xqh_id"]
-	postDataMap["sfkkjyxdxnxq"] = j.postArr1["sfkkjyxdxnxq"]
-	postDataMap["bklx_id"] = j.postArr1["bklx_id"]
-	postDataMap["xkly"] = j.postArr1["xkly"]
-	postDataMap["rwlx"] = j.postArr1["rwlx"]
-	postDataMap["jg_id"] = j.postArr1["jg_id_1"]
-	postDataMap["njdm_id_1"] = j.postArr1["njdm_id_1"]
-	postDataMap["zyh_id_1"] = j.postArr1["zyh_id_1"]
-	postDataMap["zyh_id"] = j.postArr1["zyh_id_1"]
-	postDataMap["ccdm"] = j.postArr1["ccdm"]
-	postDataMap["xsbj"] = j.postArr1["xsbj"]
-	postDataMap["sfkgbcx"] = j.postArr2["sfkgbcx"]
-	postDataMap["sfrxtgkcxd"] = j.postArr2["sfrxtgkcxd"]
-	postDataMap["tykczgxdcs"] = j.postArr2["tykczgxdcs"]
-	postDataMap["xkxnm"] = j.postArr1["xkxnm"]
-	postDataMap["xkxqm"] = j.postArr1["xkxqm"]
-	postDataMap["kklxdm"] = j.postArr1["firstKklxdm"]
-	postDataMap["bbhzxjxb"] = j.postArr2["bbhzxjxb"]
-	postDataMap["rlkz"] = j.postArr2["rlkz"]
-	postDataMap["xkzgbj"] = j.postArr2["xkzgbj"]
+	postDataMap["rwlx"] = j.getInputValue("rwlx")
+	postDataMap["xklc"] = j.getInputValue("xklc")
+	postDataMap["xkly"] = j.getInputValue("xkly")
+	postDataMap["bklx_id"] = j.getInputValue("bklx_id")
+	postDataMap["sfkkjyxdxnxq"] = j.getInputValue("sfkkjyxdxnxq")
+	postDataMap["kzkcgs"] = j.getInputValue("kzkcgs")
+	postDataMap["xqh_id"] = j.getInputValue("xqh_id")
+	postDataMap["jg_id"] = j.getInputValue("jg_id_1")
+	postDataMap["njdm_id_1"] = j.getInputValue("njdm_id_1")
+	postDataMap["zyh_id_1"] = j.getInputValue("zyh_id_1")
+	postDataMap["gnjkxdnj"] = j.getInputValue("gnjkxdnj")
+	postDataMap["zyh_id"] = j.getInputValue("zyh_id")
+	postDataMap["zyfx_id"] = j.getInputValue("zyfx_id")
+	postDataMap["njdm_id"] = j.getInputValue("njdm_id")
+	postDataMap["bh_id"] = j.getInputValue("bh_id")
+	postDataMap["bjgkczxbbjwcx"] = j.getInputValue("bjgkczxbbjwcx")
+	postDataMap["xbm"] = j.getInputValue("xbm")
+	postDataMap["xslbdm"] = j.getInputValue("xslbdm")
+	postDataMap["mzm"] = j.getInputValue("mzm")
+	postDataMap["ccdm"] = j.getInputValue("ccdm")
+	postDataMap["xz"] = j.getInputValue("xz")
+	postDataMap["xsbj"] = j.getInputValue("xsbj")
+	postDataMap["sfkknj"] = j.getInputValue("sfkknj")
+	postDataMap["sfkkzy"] = j.getInputValue("sfkkzy")
+	postDataMap["kzybkxy"] = j.getInputValue("kzybkxy")
+	postDataMap["sfznkx"] = j.getInputValue("sfznkx")
+	postDataMap["zdkxms"] = j.getInputValue("zdkxms")
+	postDataMap["sfkxq"] = j.getInputValue("sfkxq")
+	postDataMap["sfkcfx"] = j.getInputValue("sfkcfx")
+	postDataMap["kkbk"] = j.getInputValue("kkbk")
+	postDataMap["kkbkdj"] = j.getInputValue("kkbkdj")
+	postDataMap["sfkgbcx"] = j.getInputValue("sfkgbcx")
+	postDataMap["sfrxtgkcxd"] = j.getInputValue("sfrxtgkcxd")
+	postDataMap["tykczgxdcs"] = j.getInputValue("tykczgxdcs")
+	postDataMap["xkxnm"] = j.getInputValue("xkxnm")
+	postDataMap["xkxqm"] = j.getInputValue("xkxqm")
+	postDataMap["kklxdm"] = j.getInputValue("firstKklxdm")
+	postDataMap["bbhzxjxb"] = j.getInputValue("bbhzxjxb")
+	postDataMap["xkkz_id"] = j.getInputValue("firstXkkzId")
+	postDataMap["rlkz"] = j.getInputValue("rlkz")
+	postDataMap["xkzgbj"] = j.getInputValue("xkzgbj")
 	postDataMap["kspage"] = "1"
 	postDataMap["jspage"] = "1480"
 	postDataMap["jxbzb"] = ""
+	postDataMap["yl_list[0]"] = "1"
 
 	// 只有在没有指定课程 ID 的时候才会根据课程类别搜索
 	if len(j.robConfig.CourseNumList) == 0 {
-		for i, courseType := range j.robConfig.CourseNumList {
+		for i, courseType := range j.robConfig.CategoryList {
 			postDataMap["kcgs_list["+strconv.Itoa(i)+"]"] = courseType
 		}
 	}
@@ -324,6 +358,9 @@ func (j *JwxtRob) GetClassList() ([]map[string]interface{}, error) {
 	j.headerMap["X-Jw.requested-With"] = "XMLHttpJw.request"
 
 	var postData = map2String(postDataMap)
+
+	fmt.Println(postDataMap)
+	fmt.Println(postData)
 
 	// 发送请求
 	res, err := j.curl(u, postData)
@@ -338,6 +375,8 @@ func (j *JwxtRob) GetClassList() ([]map[string]interface{}, error) {
 	if err = json.Unmarshal([]byte(res), &result); err != nil {
 		return nil, errs.ErrServerFail
 	}
+
+	fmt.Println(result)
 
 	// 检查是否包含课程列表
 	if tmpList, ok := result["tmpList"].([]interface{}); ok && len(tmpList) > 0 {
@@ -361,20 +400,20 @@ func (j *JwxtRob) DoSelect(kcArr, oldKcArr map[string]interface{}) (map[string]i
 	postDataMap["jxb_ids"] = getString(kcArr["do_jxb_id"])
 	postDataMap["kch_id"] = getString(oldKcArr["kch_id"])
 	postDataMap["kcmc"] = "(" + getString(oldKcArr["kch"]) + ")" + getString(oldKcArr["kcmc"]) + "-" + getString(oldKcArr["xf"]) + "学分"
-	postDataMap["rwlx"] = j.postArr2["rwlx"]
-	postDataMap["rlkz"] = j.postArr2["rlkz"]
-	postDataMap["rlzlkz"] = j.postArr2["rlzlkz"]
-	postDataMap["sxbj"] = j.postArr2["sxbj"]
+	postDataMap["rwlx"] = j.getInputValue("rwlx")
+	postDataMap["rlkz"] = j.getInputValue("rlkz")
+	postDataMap["rlzlkz"] = j.getInputValue("rlzlkz")
+	postDataMap["sxbj"] = j.getInputValue("sxbj")
 	postDataMap["xxkbj"] = getString(oldKcArr["xxkbj"])
 	postDataMap["qz"] = "0"
 	postDataMap["cxbj"] = getString(oldKcArr["cxbj"])
-	postDataMap["xkkz_id"] = j.postArr1["xkkz_id"]
-	postDataMap["njdm_id"] = j.postArr1["njdm_id"]
-	postDataMap["zyh_id"] = j.postArr1["zyh_id"]
-	postDataMap["kklxdm"] = j.postArr1["firstKklxdm"]
-	postDataMap["xklc"] = j.postArr2["xklc"]
-	postDataMap["xkxnm"] = j.postArr1["xkxnm"]
-	postDataMap["xkxqm"] = j.postArr1["xkxqm"]
+	postDataMap["xkkz_id"] = j.getInputValue("xkkz_id")
+	postDataMap["njdm_id"] = j.getInputValue("njdm_id")
+	postDataMap["zyh_id"] = j.getInputValue("zyh_id")
+	postDataMap["kklxdm"] = j.getInputValue("firstKklxdm")
+	postDataMap["xklc"] = j.getInputValue("xklc")
+	postDataMap["xkxnm"] = j.getInputValue("xkxnm")
+	postDataMap["xkxqm"] = j.getInputValue("xkxqm")
 
 	j.formatLog("正在抢课:" + postDataMap["kcmc"])
 	res, err := j.curl(u, map2String(postDataMap))
@@ -396,19 +435,19 @@ func (j *JwxtRob) GetClassInfo(kcArr map[string]interface{}) ([]map[string]inter
 
 	postDataMap := make(map[string]string)
 	j.postDataCommon(postDataMap)
-	postDataMap["jg_id"] = j.postArr2["jg_id"]
-	postDataMap["zyh_id"] = j.postArr1["zyh_id"]
-	postDataMap["bbhzxjxb"] = j.postArr2["bbhzxjxb"]
-	postDataMap["ccdm"] = j.postArr1["ccdm"]
-	postDataMap["xsbj"] = j.postArr1["xsbj"]
-	postDataMap["xkxnm"] = j.postArr1["xkxnm"]
-	postDataMap["xkxqm"] = j.postArr1["xkxqm"]
+	postDataMap["jg_id"] = j.getInputValue("jg_id_1")
+	postDataMap["zyh_id"] = j.getInputValue("zyh_id")
+	postDataMap["bbhzxjxb"] = j.getInputValue("bbhzxjxb")
+	postDataMap["ccdm"] = j.getInputValue("ccdm")
+	postDataMap["xsbj"] = j.getInputValue("xsbj")
+	postDataMap["xkxnm"] = j.getInputValue("xkxnm")
+	postDataMap["xkxqm"] = j.getInputValue("xkxqm")
 	postDataMap["xkxskcgskg"] = "1"
-	postDataMap["rlkz"] = j.postArr1["rlkz"]
-	postDataMap["kklxdm"] = j.postArr1["firstKklxdm"]
+	postDataMap["rlkz"] = j.getInputValue("rlkz")
+	postDataMap["kklxdm"] = j.getInputValue("firstKklxdm")
 	postDataMap["kch_id"] = getString(kcArr["kch_id"])
 	postDataMap["jxbzcxskg"] = "0"
-	postDataMap["xkkz_id"] = j.postArr1["firstXkkzId"]
+	postDataMap["xkkz_id"] = j.getInputValue("firstXkkzId")
 	postDataMap["cxbj"] = getString(kcArr["cxbj"])
 	postDataMap["fxbj"] = getString(kcArr["fxbj"])
 

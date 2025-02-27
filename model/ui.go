@@ -11,7 +11,7 @@ type UIComponents struct {
 	HourEntry          *widget.Entry
 	MinuteEntry        *widget.Entry
 	ComboBox           *widget.Select
-	CheckBoxes         [8]*widget.Check
+	CheckBoxes         [9]*widget.Check
 	CourseNameEntry    *widget.Entry
 	TeacherEntry       *widget.Entry
 	CourseNumListEntry *widget.Entry

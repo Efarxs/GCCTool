@@ -53,10 +53,14 @@ func (r *Robber) StartRob(ui model.UIComponents) {
 		}
 	}
 
+	fmt.Println(selectedCourseTypes)
 	selectedRadioButton := ui.RadioButtonGroup.Selected
 	selectedComboBoxIndex := ui.ComboBox.SelectedIndex()
 	url := []string{"172.22.14.1", "172.22.14.2", "172.22.14.4", "210.39.240.133", "jwxt.gcc.edu.cn", "172.22.14.3", "172.22.14.8"}[selectedComboBoxIndex]
-	courseNumList := strings.Split(ui.CourseNumListEntry.Text, ",")
+	var courseNumList []string
+	if len(strings.TrimSpace(ui.CourseNumListEntry.Text)) > 0 {
+		courseNumList = strings.Split(ui.CourseNumListEntry.Text, ",")
+	}
 
 	threadNum, err := strconv.Atoi(ui.ThreadNumEntry.Text)
 	if err != nil {
@@ -86,6 +90,7 @@ func (r *Robber) StartRob(ui model.UIComponents) {
 		CourseNumList: courseNumList,
 		AHeadMinute:   aHeadMinute,
 		AgentUrl:      ui.AgentEntry.Text,
+		CategoryList:  selectedCourseTypes,
 	}
 
 	if r.config.Account == "" {
@@ -424,6 +429,9 @@ func (r *Robber) login() error {
 }
 
 func (r *Robber) isCourseValid(item map[string]interface{}) bool {
+	if len(r.config.CourseNumList) == 0 {
+		return true
+	}
 	if r.config.CourseType != 0 {
 		return true
 	}
