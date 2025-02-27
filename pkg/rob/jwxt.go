@@ -341,7 +341,7 @@ func (j *JwxtRob) GetClassList() ([]map[string]interface{}, error) {
 	postDataMap["kspage"] = "1"
 	postDataMap["jspage"] = "1480"
 	postDataMap["jxbzb"] = ""
-	postDataMap["yl_list[0]"] = "1"
+	//postDataMap["yl_list[0]"] = "1"
 
 	// 只有在没有指定课程 ID 的时候才会根据课程类别搜索
 	if len(j.robConfig.CourseNumList) == 0 {

@@ -42,7 +42,7 @@ func main() {
 		ui.ComboBox,
 		widget.NewLabel("代理地址"),
 		ui.AgentEntry,
-		widget.NewLabel("当想用外网访问内网的时候，可以使用代理地址进行转发，如无请选节点4和5，此处留空"),
+		widget.NewLabel("当想用外网访问校园网内网的时候，可以使用代理地址进行转发，如是外网且无代理地址，请选节点4和5，此处留空"),
 		widget.NewLabel("账号:"),
 		ui.AccountEntry,
 		widget.NewLabel("密码:"),
@@ -57,7 +57,7 @@ func main() {
 		container.NewHBox(
 			widget.NewLabel("提前："),
 			ui.AHeadMinuteEntry,
-			widget.NewLabel("分开枪"),
+			widget.NewLabel("分开抢"),
 		),
 		widget.NewLabel("----系统将会在距离系统选课开始时间提前查询课程列表\n防止教务系统不按套路出牌\n比如有时候教务系统会在12:29开始选课（正式时间是12:30）"),
 		container.NewHBox(
@@ -157,7 +157,7 @@ func createUIComponents() *model.UIComponents {
 	}
 
 	// 初始化 checkBoxes
-	checkBoxLabels := []string{"科技类", "人文类", "经营类", "体育类", "创新创业类", "艺术类", "自然科学类", "思政累", "其他类"}
+	checkBoxLabels := []string{"科技类", "人文类", "经营类", "体育类", "创新创业类", "艺术类", "自然科学类", "思政类", "其他类"}
 	for i, label := range checkBoxLabels {
 		ui.CheckBoxes[i] = widget.NewCheck(label, func(b bool) {})
 	}
