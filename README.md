@@ -4,6 +4,6 @@
 使用go版本为1.22.8
   
 如果你想使用旧版本（Java），请移步至
-[https://gitee.com/efarxs/gcc_tools_java/tree/timeCron/  ](https://github.com/Efarxs/gcc-jwxt-rob-java)
+[https://github.com/Efarxs/gcc-jwxt-rob-java/  ](https://github.com/Efarxs/gcc-jwxt-rob-java)
 
 
