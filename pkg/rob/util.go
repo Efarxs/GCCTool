@@ -9,7 +9,6 @@ import (
 )
 
 // 内部工具函数
-
 // getPostDataMap 从 HTML 内容中提取 <input> 标签的 name 和 value 属性，并存储到 map 中
 func getPostDataMap(res string, dataMap map[string]string) map[string]string {
 	// 正则表达式匹配 <input> 标签

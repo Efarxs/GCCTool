@@ -29,43 +29,42 @@ var (
 func main() {
 	myApp := app.New()
 
-	myWindow = myApp.NewWindow("GCC抢课工具V1.0.2 - 仅供学习参考，禁止用于非法用途，否则后果自负 - BY: 广东最深情的男人")
+	myWindow = myApp.NewWindow("GCC抢课工具V1.1.0 - 仅供学习参考，禁止用于非法用途，否则后果自负 - BY: 广东最深情的男人")
 	myWindow.SetFixedSize(false)            // 确保窗口大小可调整
-	myWindow.Resize(fyne.NewSize(800, 900)) // 设置初始窗口大小
+	myWindow.Resize(fyne.NewSize(810, 768)) // 设置初始窗口大小
 
 	ui = createUIComponents()
 	logComp = logger.NewLogger(ui)
 	robber = rob.NewRobber(myWindow, ui, logComp)
 
 	basicInfoPanel := container.NewVBox(
-		widget.NewLabel("选择节点"),
-		ui.ComboBox,
-		widget.NewLabel("代理地址"),
-		ui.AgentEntry,
-		widget.NewLabel("当想用外网访问校园网内网的时候，可以使用代理地址进行转发，如是外网且无代理地址，请选节点4和5，此处留空"),
-		widget.NewLabel("账号:"),
-		ui.AccountEntry,
-		widget.NewLabel("密码:"),
-		ui.PasswordEntry,
+		container.NewGridWithRows(
+			2,
+			widget.NewLabel("选择节点"),
+			ui.ComboBox,
+			widget.NewLabel("代理地址"),
+			ui.AgentEntry,
+		),
+		container.NewGridWithRows(
+			2,
+			widget.NewLabel("账号:"),
+			ui.AccountEntry,
+			widget.NewLabel("密码:"),
+			ui.PasswordEntry,
+		),
 		container.NewHBox(
 			widget.NewLabel("系统选课时间："),
 			ui.HourEntry,
 			widget.NewLabel("时"),
 			ui.MinuteEntry,
-			widget.NewLabel("分"),
-		),
-		container.NewHBox(
+			widget.NewLabel("分   "),
 			widget.NewLabel("提前："),
 			ui.AHeadMinuteEntry,
-			widget.NewLabel("分开抢"),
-		),
-		widget.NewLabel("----系统将会在距离系统选课开始时间提前查询课程列表\n防止教务系统不按套路出牌\n比如有时候教务系统会在12:29开始选课（正式时间是12:30）"),
-		container.NewHBox(
+			widget.NewLabel("分钟开抢   "),
 			widget.NewLabel("线程数："),
 			ui.ThreadNumEntry,
 			widget.NewLabel("个"),
 		),
-		widget.NewLabel("----线程数越多消耗的电脑资源越多\n但是抢到的概率就越大\n比如10线程，表示10个人同时帮你抢一个课"),
 	)
 
 	configPanel := container.NewVBox()
@@ -89,10 +88,9 @@ func main() {
 	inputPanel := container.NewVBox(
 		widget.NewLabel("学分限制:"),
 		ui.MinCreditEntry,
-		widget.NewLabel("----如果没有符合指定学分的课程可选\n会依次降低学分要求直至1"),
-		widget.NewLabel("指定课程名称:"),
+		widget.NewLabel("指定课程名称（除网课）:"),
 		ui.CourseNameEntry,
-		widget.NewLabel("指定老师:"),
+		widget.NewLabel("指定老师（除网课）:"),
 		ui.TeacherEntry,
 		widget.NewLabel("指定课程号(网课用)："),
 		ui.CourseNumListEntry,
@@ -123,7 +121,7 @@ func main() {
 
 	// 第一个弹窗
 	firstDialog := dialog.NewCustom("提示", "关闭", container.NewVBox(
-		widget.NewLabel("请先配置好信息，再点击开始抢课！脚本只是辅助，抢不到不要怪作者"),
+		widget.NewLabel("请先仔细阅读使用方法，并配置好信息，再点击开始抢课！脚本只是辅助,避免不了教务系统更新参数，抢不到不要怪作者"),
 	), myWindow)
 
 	// 显示第一个弹窗
@@ -131,7 +129,7 @@ func main() {
 
 	// 在第一个弹窗关闭后显示第二个弹窗
 	firstDialog.SetOnClosed(func() {
-		dialog.ShowInformation("赞助商", "稳定好用流量卡请联系微信：F_011013", myWindow)
+		dialog.ShowInformation("赞助商", "稳定好用流量卡或定制商业版请联系微信：F_011013", myWindow)
 	})
 
 	myWindow.CenterOnScreen()
@@ -200,8 +198,8 @@ func createUIComponents() *model.UIComponents {
 	ui.LogScroll.SetMinSize(fyne.NewSize(0, 100)) // 设置日志框的最小大小
 
 	// 设置默认值
-	//ui.AccountEntry.SetText("")
-	//ui.PasswordEntry.SetText("")
+	ui.AccountEntry.SetText("")
+	ui.PasswordEntry.SetText("")
 	//ui.AgentEntry.SetText("http://1030637rq17qg.vicp.fun")
 	ui.HourEntry.SetText("12")
 	ui.MinuteEntry.SetText("30")

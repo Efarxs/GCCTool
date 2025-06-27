@@ -2,6 +2,7 @@ package rob
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"fyne.io/fyne/v2"
@@ -10,6 +11,7 @@ import (
 	"jwxt/pkg/component"
 	"jwxt/pkg/errs"
 	"jwxt/pkg/logger"
+	"os"
 	"strconv"
 	"strings"
 	"sync"
@@ -104,7 +106,24 @@ func (r *Robber) StartRob(ui model.UIComponents) {
 		return
 	}
 
-	r.jwxt = NewJwxtRob(r.config, r.Logger)
+	// 加载data.json
+	file, err := os.ReadFile("./data.json")
+	if err != nil {
+		dialog.ShowInformation("提示", "加载data.json失败", r.myWindow)
+		r.stopEvent()
+		return
+	}
+
+	// 解析成 map[string][]string
+	var data map[string][]string
+	err = json.Unmarshal(file, &data)
+	if err != nil {
+		dialog.ShowInformation("提示", "解析data.json失败", r.myWindow)
+		r.stopEvent()
+		return
+	}
+
+	r.jwxt = NewJwxtRob(r.config, r.Logger, data)
 
 	maxRetries := aHeadMinute * 50
 

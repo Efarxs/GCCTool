@@ -21,29 +21,28 @@ import (
 )
 
 type JwxtRob struct {
-	host       string
-	apiURL     string
-	headerMap  map[string]string
-	robConfig  model.Config
-	cookieJar  *cookiejar.Jar
-	httpClient *http.Client
-	httpCode   int
-	postArr1   map[string]string
-	postArr2   map[string]string
-
-	logger   *logger.Logger
-	AgentUrl string
+	host          string
+	apiURL        string
+	headerMap     map[string]string
+	robConfig     model.Config
+	cookieJar     *cookiejar.Jar
+	httpClient    *http.Client
+	httpCode      int
+	postArr       map[string]string
+	parameterData map[string][]string
+	logger        *logger.Logger
+	AgentUrl      string
 }
 
-func NewJwxtRob(robConfig model.Config, logger *logger.Logger) *JwxtRob {
+func NewJwxtRob(robConfig model.Config, logger *logger.Logger, pData map[string][]string) *JwxtRob {
 	jwxt := &JwxtRob{
-		host:      "4nx8821287.goho.co",
-		robConfig: robConfig,
-		headerMap: make(map[string]string),
-		postArr1:  make(map[string]string),
-		postArr2:  make(map[string]string),
-		logger:    logger,
-		AgentUrl:  robConfig.AgentUrl,
+		host:          "4nx8821287.goho.co",
+		robConfig:     robConfig,
+		headerMap:     make(map[string]string),
+		postArr:       make(map[string]string),
+		logger:        logger,
+		AgentUrl:      robConfig.AgentUrl,
+		parameterData: pData,
 	}
 	jwxt.apiURL = "http://" + jwxt.host
 	if robConfig.URL != "" {
@@ -77,6 +76,7 @@ func (j *JwxtRob) curl(url string, postData string) (string, error) {
 		//url = fmt.Sprintf("%s/%s", j.AgentUrl, strings.Replace(url, "http://", "", 1))
 		url = strings.Replace(url, j.apiURL, j.AgentUrl, 1)
 	}
+
 	if postData != "" {
 		req, err = http.NewRequest("POST", url, strings.NewReader(postData))
 	} else {
@@ -84,6 +84,7 @@ func (j *JwxtRob) curl(url string, postData string) (string, error) {
 	}
 
 	if err != nil {
+		j.logger.WriteToFile(err.Error())
 		return "", err
 	}
 
@@ -93,6 +94,7 @@ func (j *JwxtRob) curl(url string, postData string) (string, error) {
 
 	resp, err := j.httpClient.Do(req)
 	if err != nil {
+		j.logger.WriteToFile(err.Error())
 		return "", err
 	}
 	defer func(Body io.ReadCloser) {
@@ -104,6 +106,7 @@ func (j *JwxtRob) curl(url string, postData string) (string, error) {
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
+		j.logger.WriteToFile(err.Error())
 		return "", err
 	}
 
@@ -116,6 +119,7 @@ func (j *JwxtRob) login() error {
 	urlLogin := j.apiURL + "/xtgl/login_slogin.html"
 	res, err := j.curl(urlLogin, "")
 	if err != nil {
+		j.logger.WriteToFile(err.Error())
 		return errs.ErrServerFail
 	}
 
@@ -132,21 +136,25 @@ func (j *JwxtRob) login() error {
 	urlPublicKey := j.apiURL + "/xtgl/login_getPublicKey.html"
 	res, err = j.curl(urlPublicKey, "")
 	if err != nil {
+		j.logger.WriteToFile(err.Error())
 		return errs.ErrServerFail
 	}
 
 	var keyData map[string]string
 	if err = json.Unmarshal([]byte(res), &keyData); err != nil {
+		j.logger.WriteToFile(err.Error())
 		return errs.ErrServerFail
 	}
 
 	modulus, err := base64.StdEncoding.DecodeString(keyData["modulus"])
 	if err != nil {
+		j.logger.WriteToFile(err.Error())
 		return errs.ErrServerFail
 	}
 
 	exponent, err := base64.StdEncoding.DecodeString(keyData["exponent"])
 	if err != nil {
+		j.logger.WriteToFile(err.Error())
 		return errs.ErrServerFail
 	}
 
@@ -161,6 +169,7 @@ func (j *JwxtRob) login() error {
 	// 加密密码
 	encrypted, err := rsa.EncryptPKCS1v15(rand.Reader, pubKey, []byte(j.robConfig.Password))
 	if err != nil {
+		j.logger.WriteToFile(err.Error())
 		return errs.ErrServerFail
 	}
 	enPassword := base64.StdEncoding.EncodeToString(encrypted)
@@ -169,6 +178,7 @@ func (j *JwxtRob) login() error {
 	postData := "csrftoken=" + csrfToken + "&language=zh_CN&yhm=" + j.robConfig.Account + "&mm=" + url.QueryEscape(enPassword)
 	res, err = j.curl(urlLogin, postData)
 	if err != nil {
+		j.logger.WriteToFile(err.Error())
 		return errs.ErrServerFail
 	}
 
@@ -194,7 +204,8 @@ func (j *JwxtRob) initPostArr1() error {
 	res, err := j.curl(u, "")
 
 	if err != nil {
-		return errs.ErrServerFail
+		fmt.Println(err.Error())
+		return errors.New("网络异常1")
 	}
 
 	if strings.Contains(res, "用户登录") {
@@ -207,79 +218,49 @@ func (j *JwxtRob) initPostArr1() error {
 		return errs.ErrRobTime
 	}
 
-	getPostDataMap(res, j.postArr1)
+	getPostDataMap(res, j.postArr)
 	return nil
 }
 
 // initPostArr2 初始化 postArr2 数据
 func (j *JwxtRob) initPostArr2() error {
 	u := j.apiURL + "/xsxk/zzxkyzb_cxZzxkYzbDisplay.html?gnmkdm=N253512&su=" + j.robConfig.Account
-	postData := "xkkz_id=" + j.postArr1["firstXkkzId"] + "&xszxzt=1&kspage=0&jspage=0"
+	postData := "xkkz_id=" + j.postArr["firstXkkzId"] + "&xszxzt=1&kspage=0&jspage=0"
 	res, err := j.curl(u, postData)
 	//m := mock.NewMock()
 	//res = m.Display()
 	if err != nil {
-		return errors.New("网络异常")
+		fmt.Println(err.Error())
+		return errors.New("网络异常2")
 	}
 	if strings.Contains(res, "用户登录") {
 		return errors.New("被抢登录了")
 	}
 
-	getPostDataMap(res, j.postArr2)
+	getPostDataMap(res, j.postArr)
+
+	fmt.Println(j.postArr)
 	return nil
 }
 
 func (j *JwxtRob) getInputValue(key string) string {
-	v1, ok1 := j.postArr1[key]
-	v2, ok2 := j.postArr2[key]
+	v1, ok1 := j.postArr[key]
 	if ok1 {
 		return v1
 	}
-	if ok2 {
-		return v2
-	}
 	return ""
-}
-
-// postDataCommon 将 postArr1 和 postArr2 中的数据合并到 postDataMap 中
-func (j *JwxtRob) postDataCommon(postDataMap map[string]string) {
-	// 从 postArr2 中提取数据
-	postDataMap["sfkknj"] = j.getInputValue("sfkknj")
-	postDataMap["sfkkzy"] = j.getInputValue("sfkkzy")
-	postDataMap["kzybkxy"] = j.getInputValue("kzybkxy")
-	postDataMap["sfznkx"] = j.getInputValue("sfznkx")
-	postDataMap["zdkxms"] = j.getInputValue("zdkxms")
-	postDataMap["sfkxq"] = j.getInputValue("sfkxq")
-	postDataMap["sfkcfx"] = j.getInputValue("sfkcfx")
-	postDataMap["kkbk"] = j.getInputValue("kkbk")
-	postDataMap["kkbkdj"] = j.getInputValue("kkbkdj")
-
-	// 从 postArr1 中提取数据
-	postDataMap["zyfx_id"] = j.getInputValue("zyfx_id")
-	postDataMap["njdm_id"] = j.getInputValue("njdm_id")
-	postDataMap["bh_id"] = j.getInputValue("bh_id")
-	postDataMap["xbm"] = j.getInputValue("xbm")
-	postDataMap["xslbdm"] = j.getInputValue("xslbdm")
-	postDataMap["mzm"] = j.getInputValue("mzm")
-	postDataMap["xz"] = j.getInputValue("xz")
-
-	// 从 postArr2 中提取数据
-	postDataMap["rwlx"] = j.getInputValue("rwlx")
-	postDataMap["xkly"] = j.getInputValue("xkly")
-	postDataMap["bklx_id"] = j.getInputValue("bklx_id")
-	postDataMap["sfkkjyxdxnxq"] = j.getInputValue("sfkkjyxdxnxq")
-	postDataMap["xqh_id"] = j.getInputValue("xqh_id")
-
 }
 
 func (j *JwxtRob) GetClassList() ([]map[string]interface{}, error) {
 
 	err := j.initPostArr1()
 	if err != nil {
+		j.logger.WriteToFile(err.Error())
 		return nil, errs.ErrDataInit
 	}
 	err = j.initPostArr2()
 	if err != nil {
+		j.logger.WriteToFile(err.Error())
 		return nil, errs.ErrDataInit
 	}
 	// 查询课程
@@ -289,58 +270,37 @@ func (j *JwxtRob) GetClassList() ([]map[string]interface{}, error) {
 	if j.robConfig.CourseType == 0 {
 		// 如果是 0
 		postDataMap["kkbm_id_list[0]"] = "70" // 教务处，这里写死了网课
-	} else if j.robConfig.CourseType == 1 {
-		// 体育课
-		//postDataMap["filter_list[0]"] = strconv.Itoa(j.robConfig.CourseType)
-		postDataMap["filter_list[0]"] = j.robConfig.CourseName
 	}
-
-	// kcgs_list%5B0%5D=1&kcgs_list%5B1%5D=2&kcgs_list%5B2%5D=3&kcgs_list%5B3%5D=4&kcgs_list%5B4%5D=5&rwlx=2&xklc=2&xkly=0&bklx_id=0&sfkkjyxdxnxq=0&kzkcgs=0&xqh_id=1&jg_id=12&njdm_id_1=2021&zyh_id_1=1201&gnjkxdnj=0&zyh_id=1201&zyfx_id=wfx&njdm_id=2021&bh_id=12012102&bjgkczxbbjwcx=0&xbm=1&xslbdm=421&mzm=01&xz=4&ccdm=3&xsbj=0&sfkknj=0&sfkkzy=0&kzybkxy=0&sfznkx=0&zdkxms=0&sfkxq=0&sfkcfx=0&kkbk=0&kkbkdj=0&sfkgbcx=0&sfrxtgkcxd=0&tykczgxdcs=0&xkxnm=2024&xkxqm=12&kklxdm=10&bbhzxjxb=0&xkkz_id=2F05D8896BE84A65E065000000000001&rlkz=0&xkzgbj=0&kspage=1&jspage=10&jxbzb=
-	// 添加其他参数
-	postDataMap["rwlx"] = j.getInputValue("rwlx")
-	postDataMap["xklc"] = j.getInputValue("xklc")
-	postDataMap["xkly"] = j.getInputValue("xkly")
-	postDataMap["bklx_id"] = j.getInputValue("bklx_id")
-	postDataMap["sfkkjyxdxnxq"] = j.getInputValue("sfkkjyxdxnxq")
-	postDataMap["kzkcgs"] = j.getInputValue("kzkcgs")
-	postDataMap["xqh_id"] = j.getInputValue("xqh_id")
+	if j.robConfig.CourseName != "" {
+		j.robConfig.CourseName = strings.ReplaceAll(j.robConfig.CourseName, "，", ",")
+		courseNameList := strings.Split(j.robConfig.CourseName, ",")
+		if len(courseNameList) > 0 {
+			for i, courseName := range courseNameList {
+				postDataMap["filter_list["+strconv.Itoa(i)+"]"] = courseName
+			}
+		} else {
+			postDataMap["filter_list[0]"] = j.robConfig.CourseName
+		}
+	}
+	// 遍历要的参数
+	for _, s := range j.parameterData["classList"] {
+		postDataMap[s] = j.getInputValue(s)
+	}
+	// 移除一些元素
+	delete(postDataMap, "zh")
+	delete(postDataMap, "jxbzb")
+	// 额外的参数 需要手动修正
 	postDataMap["jg_id"] = j.getInputValue("jg_id_1")
-	postDataMap["njdm_id_1"] = j.getInputValue("njdm_id_1")
-	postDataMap["zyh_id_1"] = j.getInputValue("zyh_id_1")
-	postDataMap["gnjkxdnj"] = j.getInputValue("gnjkxdnj")
-	postDataMap["zyh_id"] = j.getInputValue("zyh_id")
-	postDataMap["zyfx_id"] = j.getInputValue("zyfx_id")
-	postDataMap["njdm_id"] = j.getInputValue("njdm_id")
-	postDataMap["bh_id"] = j.getInputValue("bh_id")
-	postDataMap["bjgkczxbbjwcx"] = j.getInputValue("bjgkczxbbjwcx")
-	postDataMap["xbm"] = j.getInputValue("xbm")
-	postDataMap["xslbdm"] = j.getInputValue("xslbdm")
-	postDataMap["mzm"] = j.getInputValue("mzm")
-	postDataMap["ccdm"] = j.getInputValue("ccdm")
-	postDataMap["xz"] = j.getInputValue("xz")
-	postDataMap["xsbj"] = j.getInputValue("xsbj")
-	postDataMap["sfkknj"] = j.getInputValue("sfkknj")
-	postDataMap["sfkkzy"] = j.getInputValue("sfkkzy")
-	postDataMap["kzybkxy"] = j.getInputValue("kzybkxy")
-	postDataMap["sfznkx"] = j.getInputValue("sfznkx")
-	postDataMap["zdkxms"] = j.getInputValue("zdkxms")
-	postDataMap["sfkxq"] = j.getInputValue("sfkxq")
-	postDataMap["sfkcfx"] = j.getInputValue("sfkcfx")
-	postDataMap["kkbk"] = j.getInputValue("kkbk")
-	postDataMap["kkbkdj"] = j.getInputValue("kkbkdj")
-	postDataMap["sfkgbcx"] = j.getInputValue("sfkgbcx")
-	postDataMap["sfrxtgkcxd"] = j.getInputValue("sfrxtgkcxd")
-	postDataMap["tykczgxdcs"] = j.getInputValue("tykczgxdcs")
-	postDataMap["xkxnm"] = j.getInputValue("xkxnm")
-	postDataMap["xkxqm"] = j.getInputValue("xkxqm")
 	postDataMap["kklxdm"] = j.getInputValue("firstKklxdm")
-	postDataMap["bbhzxjxb"] = j.getInputValue("bbhzxjxb")
 	postDataMap["xkkz_id"] = j.getInputValue("firstXkkzId")
-	postDataMap["rlkz"] = j.getInputValue("rlkz")
-	postDataMap["xkzgbj"] = j.getInputValue("xkzgbj")
+	if j.getInputValue("jxbzbkg") == "1" {
+		postDataMap["jxbzb"] = j.getInputValue("jxbzb")
+	}
 	postDataMap["kspage"] = "1"
+	// 最大展示数量
 	postDataMap["jspage"] = "1480"
-	postDataMap["jxbzb"] = ""
+	//postDataMap["jxbzb"] = ""
+	// 如果只要有余量的课程，可以把下面的注释去掉
 	//postDataMap["yl_list[0]"] = "1"
 
 	// 只有在没有指定课程 ID 的时候才会根据课程类别搜索
@@ -359,24 +319,26 @@ func (j *JwxtRob) GetClassList() ([]map[string]interface{}, error) {
 
 	var postData = map2String(postDataMap)
 
-	fmt.Println(postDataMap)
-	fmt.Println(postData)
+	//fmt.Println(postDataMap)
+	//fmt.Println(postData)
 
 	// 发送请求
 	res, err := j.curl(u, postData)
 	//m := mock.NewMock()
 	//res = m.GetPart()
 	if err != nil {
-		return nil, errs.ErrServerFail
+		j.logger.WriteToFile(err.Error())
+		return nil, err
 	}
 
 	// 解析响应
 	var result map[string]interface{}
 	if err = json.Unmarshal([]byte(res), &result); err != nil {
+		j.logger.WriteToFile(err.Error())
 		return nil, errs.ErrServerFail
 	}
 
-	fmt.Println(result)
+	//fmt.Println(result)
 
 	// 检查是否包含课程列表
 	if tmpList, ok := result["tmpList"].([]interface{}); ok && len(tmpList) > 0 {
@@ -403,7 +365,11 @@ func (j *JwxtRob) DoSelect(kcArr, oldKcArr map[string]interface{}) (map[string]i
 	postDataMap["rwlx"] = j.getInputValue("rwlx")
 	postDataMap["rlkz"] = j.getInputValue("rlkz")
 	postDataMap["rlzlkz"] = j.getInputValue("rlzlkz")
-	postDataMap["sxbj"] = j.getInputValue("sxbj")
+	postDataMap["cdrlkz"] = j.getInputValue("cdrlkz")
+	postDataMap["sxbj"] = "0"
+	if postDataMap["rlkz"] == "1" || postDataMap["rlzlkz"] == "1" || postDataMap["cdrlkz"] == "1" {
+		postDataMap["sxbj"] = "1"
+	}
 	postDataMap["xxkbj"] = getString(oldKcArr["xxkbj"])
 	postDataMap["qz"] = "0"
 	postDataMap["cxbj"] = getString(oldKcArr["cxbj"])
@@ -414,15 +380,21 @@ func (j *JwxtRob) DoSelect(kcArr, oldKcArr map[string]interface{}) (map[string]i
 	postDataMap["xklc"] = j.getInputValue("xklc")
 	postDataMap["xkxnm"] = j.getInputValue("xkxnm")
 	postDataMap["xkxqm"] = j.getInputValue("xkxqm")
+	postDataMap["njdm_id_xs"] = j.getInputValue("njdm_id_xs")
+	postDataMap["zyh_id_xs"] = j.getInputValue("zyh_id_xs")
+	postDataMap["jcxx_id"] = ""
 
 	j.formatLog("正在抢课:" + postDataMap["kcmc"])
 	res, err := j.curl(u, map2String(postDataMap))
 	if err != nil {
+		j.logger.WriteToFile(err.Error())
 		return nil, errs.ErrServerFail
 	}
 
+	fmt.Println(res)
 	var result map[string]interface{}
 	if err = json.Unmarshal([]byte(res), &result); err != nil {
+		j.logger.WriteToFile(err.Error())
 		return nil, errs.ErrServerFail
 	}
 
@@ -434,37 +406,40 @@ func (j *JwxtRob) GetClassInfo(kcArr map[string]interface{}) ([]map[string]inter
 	u := j.apiURL + "/xsxk/zzxkyzbjk_cxJxbWithKchZzxkYzb.html?gnmkdm=N253512&su=" + j.robConfig.Account
 
 	postDataMap := make(map[string]string)
-	j.postDataCommon(postDataMap)
+	// 遍历要的参数
+	for _, s := range j.parameterData["classInfo"] {
+		postDataMap[s] = j.getInputValue(s)
+	}
+	// 移除一些元素
+	delete(postDataMap, "zh")
+	delete(postDataMap, "jxbzb")
+	// 额外的参数 需要手动修正
 	postDataMap["jg_id"] = j.getInputValue("jg_id_1")
-	postDataMap["zyh_id"] = j.getInputValue("zyh_id")
-	postDataMap["bbhzxjxb"] = j.getInputValue("bbhzxjxb")
-	postDataMap["ccdm"] = j.getInputValue("ccdm")
-	postDataMap["xsbj"] = j.getInputValue("xsbj")
-	postDataMap["xkxnm"] = j.getInputValue("xkxnm")
-	postDataMap["xkxqm"] = j.getInputValue("xkxqm")
-	postDataMap["xkxskcgskg"] = "1"
-	postDataMap["rlkz"] = j.getInputValue("rlkz")
 	postDataMap["kklxdm"] = j.getInputValue("firstKklxdm")
-	postDataMap["kch_id"] = getString(kcArr["kch_id"])
-	postDataMap["jxbzcxskg"] = "0"
 	postDataMap["xkkz_id"] = j.getInputValue("firstXkkzId")
+	postDataMap["jxbzb"] = j.getInputValue("jxbzb")
+	postDataMap["kch_id"] = getString(kcArr["kch_id"])
 	postDataMap["cxbj"] = getString(kcArr["cxbj"])
 	postDataMap["fxbj"] = getString(kcArr["fxbj"])
 
 	res, err := j.curl(u, map2String(postDataMap))
 	if err != nil {
+		j.logger.WriteToFile(err.Error())
 		return nil, errs.ErrServerFail
 	}
 	//m := mock.NewMock()
 	//res = m.GetKch()
 
+	//fmt.Println(postDataMap)
+	//fmt.Println(map2String(postDataMap))
 	var result []map[string]interface{}
 	if err = json.Unmarshal([]byte(res), &result); err != nil {
+		j.logger.WriteToFile(err.Error())
 		return nil, errs.ErrServerFail
 	}
 
 	if len(result) > 0 {
-		//fmt.Println(j.robConfig.Account + "-读取课程数据【" + kcArr["kcmc"] + "】-" + kcArr["jxbmc"] + "信息成功...")
+		//fmt.Println(j.robConfig.Account + "-读取课程数据【" + j.getInputValue("kcmc") + "】-" + j.getInputValue("jxbmc") + "信息成功...")
 		return result, nil
 	}
 
